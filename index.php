@@ -9,18 +9,28 @@ function teste() {
 }
 
 function listarLivros($con){
-    header("content-type: application/json; charset=utf-8");
+    header("Content-Type: application/json; charset=utf-8");
     $stmt = $con->query("SELECT * FROM livros");
     echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+}
+
+function filtrarAutor($con){
+    header("Content-Type: application/json; charset=utf-8");
+    $nome = $_GET["nome"] ?? "";
+    $stmt = $con->prepare("SELECT * FROM livros WHERE autoLivro = ?");
+    $stmt->execute([$nome]);
+    echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+    
 }
 
 function adicionarLivros($con){
     $autorLivro = $_POST["autorLivro"] ?? "";
     $descricaoLivro = $_POST["descricaoLivro"] ?? "";
+    $anoPublicacao = $_POST["anoPublicacao"] ?? "";
 
     try {
-        $stmt = $con->prepare("INSERT INTO livros (autoLivro, descricaoLivro) VALUES (?,?)");
-        $stmt -> execute([$autorLivro, $descricaoLivro]);
+        $stmt = $con->prepare("INSERT INTO livros (autoLivro, descricaoLivro, anoPublicacao) VALUES (?,?,?)");
+        $stmt -> execute([$autorLivro, $descricaoLivro, $anoPublicacao]);
         header("Location: ../front/index.html");
     }catch(PDOException $e){
        header("Location: ../front/erro.html");
@@ -30,9 +40,11 @@ function adicionarLivros($con){
 
 if($_SERVER["REQUEST_METHOD"] === "POST"){
     adicionarLivros($con);
-}elseif ($rota === "livros") {
+}elseif ($rota === "listar/livros"){
     listarLivros($con);
-} else {
-    teste();
-}
+}elseif ($rota === "filtrar/autor"){
+    filtrarAutor($con);
+    }else{
+        teste();
+    }
 ?>
